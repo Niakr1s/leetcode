@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 pub trait Solution {
     fn two_sum(&self, nums: Vec<i32>, target: i32) -> Vec<i32>;
 }
@@ -17,6 +19,23 @@ impl Solution for NaiveSolution {
     }
 }
 
+pub struct HashMapSolution {}
+
+impl Solution for HashMapSolution {
+    fn two_sum(&self, nums: Vec<i32>, target: i32) -> Vec<i32> {
+        let mut seen: HashMap<i32, usize> = HashMap::new();
+
+        for (current, first) in nums.into_iter().enumerate() {
+            let needed = target - first;
+            if let Some(needed_idx) = seen.get(&needed) {
+                return vec![*needed_idx as i32, current as i32];
+            }
+            seen.insert(first, current);
+        }
+        unreachable!("problem says that input has exactly one solution")
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -30,6 +49,12 @@ mod test {
     #[test]
     fn naive_test() {
         let s = NaiveSolution {};
+        do_test(s);
+    }
+
+    #[test]
+    fn hashmap_test() {
+        let s = HashMapSolution {};
         do_test(s);
     }
 }
