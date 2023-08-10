@@ -86,31 +86,41 @@ mod impl1 {
     }
 }
 
+mod impl2 {
+    use std::collections::HashMap;
+
+    pub fn length_of_longest_substring(s: String) -> i32 {
+        let mut last_seen_idxs: HashMap<char, usize> = HashMap::new();
+        let mut longest: usize = 0;
+        let mut start_idx: usize = 0;
+        let mut len = 0; // we don't want to iterate over chars again to get length
+        for (cur_idx, ch) in s.chars().enumerate() {
+            if let Some(last_seen_idx) = last_seen_idxs.insert(ch, cur_idx) {
+                longest = longest.max(cur_idx - start_idx);
+                start_idx = start_idx.max(last_seen_idx + 1);
+            }
+            len += 1;
+        }
+        longest.max(len - start_idx) as i32
+    }
+}
+
 pub fn length_of_longest_substring(s: String) -> i32 {
-    impl1::LengthOfLongestSubstring::new(&s).compute()
+    impl2::length_of_longest_substring(s)
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
 
-    fn do_test(s: String, expected: i32) {
-        assert_eq!(length_of_longest_substring(s), expected);
+    #[test]
+    fn example6() {
+        do_test("abba".to_owned(), 2)
     }
 
     #[test]
-    fn example1() {
-        do_test("abcabcbb".to_owned(), 3)
-    }
-
-    #[test]
-    fn example2() {
-        do_test("bbbbb".to_owned(), 1)
-    }
-
-    #[test]
-    fn example3() {
-        do_test("pwwkew".to_owned(), 3)
+    fn example5() {
+        do_test("dvdf".to_owned(), 3)
     }
 
     #[test]
@@ -119,7 +129,21 @@ mod test {
     }
 
     #[test]
-    fn example5() {
-        do_test("dvdf".to_owned(), 3)
+    fn example3() {
+        do_test("pwwkew".to_owned(), 3)
+    }
+
+    #[test]
+    fn example2() {
+        do_test("bbbbb".to_owned(), 1)
+    }
+
+    #[test]
+    fn example1() {
+        do_test("abcabcbb".to_owned(), 3)
+    }
+
+    fn do_test(s: String, expected: i32) {
+        assert_eq!(length_of_longest_substring(s), expected);
     }
 }
