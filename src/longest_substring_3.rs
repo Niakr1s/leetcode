@@ -1,7 +1,3 @@
-pub fn length_of_longest_substring(s: String) -> i32 {
-    impl1::LengthOfLongestSubstring::new(&s).compute()
-}
-
 mod impl1 {
     use std::collections::HashMap;
 
@@ -88,38 +84,42 @@ mod impl1 {
             }
         }
     }
+}
 
-    #[cfg(test)]
-    mod test {
-        use super::*;
+pub fn length_of_longest_substring(s: String) -> i32 {
+    impl1::LengthOfLongestSubstring::new(&s).compute()
+}
 
-        fn do_test(s: String, expected: i32) {
-            assert_eq!(LengthOfLongestSubstring::new(&s).compute(), expected);
-        }
+#[cfg(test)]
+mod test {
+    use super::*;
 
-        #[test]
-        fn example1() {
-            do_test("abcabcbb".to_owned(), 3)
-        }
+    fn do_test(s: String, expected: i32) {
+        assert_eq!(length_of_longest_substring(s), expected);
+    }
 
-        #[test]
-        fn example2() {
-            do_test("bbbbb".to_owned(), 1)
-        }
+    #[test]
+    fn example1() {
+        do_test("abcabcbb".to_owned(), 3)
+    }
 
-        #[test]
-        fn example3() {
-            do_test("pwwkew".to_owned(), 3)
-        }
+    #[test]
+    fn example2() {
+        do_test("bbbbb".to_owned(), 1)
+    }
 
-        #[test]
-        fn example4() {
-            do_test("aab".to_owned(), 2)
-        }
+    #[test]
+    fn example3() {
+        do_test("pwwkew".to_owned(), 3)
+    }
 
-        #[test]
-        fn example5() {
-            do_test("dvdf".to_owned(), 3)
-        }
+    #[test]
+    fn example4() {
+        do_test("aab".to_owned(), 2)
+    }
+
+    #[test]
+    fn example5() {
+        do_test("dvdf".to_owned(), 3)
     }
 }
