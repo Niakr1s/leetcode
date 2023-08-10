@@ -32,8 +32,8 @@ mod impl1 {
             }
 
             loop {
-                self.move_right();
-                self.move_left();
+                self.progress_right();
+                self.progress_left();
                 if self.right == self.s.len() {
                     return self.largest as i32;
                 }
@@ -44,10 +44,10 @@ mod impl1 {
             &self.s[idx..idx + 1]
         }
 
-        /// Moves right index till dublicate appears and updates self.dublicate with it.
+        /// Progresses right index till dublicate appears and updates self.dublicate with it.
         /// Inserts new chars into self.buf.
         /// Updates self.largest if needed.
-        fn move_right(&mut self) {
+        fn progress_right(&mut self) {
             while self.right < self.s.len() {
                 let ch = self.ch_at_idx(self.right);
                 self.right += 1;
@@ -64,9 +64,9 @@ mod impl1 {
             }
         }
 
-        /// Moves left index till dublicate disappears and self.dublicate to None after it.
+        /// Progresses left index till dublicate disappears and self.dublicate to None after it.
         /// Removes old chars from self.buf.
-        fn move_left(&mut self) {
+        fn progress_left(&mut self) {
             if let Some(dublicate) = dbg!(self.dublicate.take()) {
                 while self.left < self.right - 1 {
                     let ch = dbg!(self.ch_at_idx(self.left));
