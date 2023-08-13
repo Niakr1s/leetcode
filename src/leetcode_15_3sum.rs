@@ -1,11 +1,74 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 struct Solution;
 
 impl Solution {
     pub fn three_sum(mut nums: Vec<i32>) -> Vec<Vec<i32>> {
-        slow::find_sums_sorted(nums, 3, 0)
+        find_sums_sorted(nums, 3, 0)
     }
+}
+
+fn find_sums_sorted(mut nums: Vec<i32>, dimension: usize, expected_sum: i32) -> Vec<Vec<i32>> {
+    let mut freq = nums_to_frequency(nums);
+    _find_sums_sorted(&mut freq, dimension, expected_sum)
+}
+
+fn _find_sums_sorted(
+    freq: &mut HashMap<i32, i32>,
+    dimension: usize,
+    expected_sum: i32,
+) -> Vec<Vec<i32>> {
+    match dimension {
+        0 => vec![],
+        1 => match freq.contains_key(&expected_sum) {
+            true => vec![vec![expected_sum]],
+            false => vec![],
+        },
+        
+        _ => {
+            let mut res: HashSet<Vec<i32>> = HashSet::new();
+            let keys: Vec<i32> = freq.keys().cloned().collect();
+
+            for key in keys {
+                freq_minus(freq, key);
+                let found = _find_sums_sorted(freq, dimension - 1, expected_sum - key);
+                freq_plus(freq, key);
+
+                let mut found_with_first: Vec<Vec<i32>> = found
+                    .into_iter()
+                    .map(|mut sums| {
+                        sums.push(key);
+                        sums
+                    })
+                    .collect();
+                for mut found in found_with_first {
+                    found.sort();
+                    res.insert(found);
+                }
+            }
+            res.into_iter().collect()
+        }
+    }
+}
+
+fn freq_minus(freq: &mut HashMap<i32, i32>, k: i32) {
+    let v = freq.get_mut(&k).unwrap();
+    *v -= 1;
+    if *v <= 0 {
+        freq.remove(&k);
+    }
+}
+
+fn freq_plus(freq: &mut HashMap<i32, i32>, k: i32) {
+    freq.entry(k).and_modify(|v| *v += 1).or_insert(1);
+}
+
+fn nums_to_frequency(nums: Vec<i32>) -> HashMap<i32, i32> {
+    nums.into_iter()
+        .fold(HashMap::<i32, i32>::new(), |mut freq, k| {
+            freq_plus(&mut freq, k);
+            freq
+        })
 }
 
 mod slow {
@@ -100,6 +163,22 @@ mod tests {
     test!(custom_2: vec![-1, -1, 2, 2, 2] => vec![vec![-1, -1, 2]]);
 
     test!(custom_3: vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] => vec![vec![0, 0, 0]]);
+
+    #[test]
+    fn nums_to_frequency_1() {
+        let expected = HashMap::from_iter([(0, 1), (1, 2), (2, 3)].into_iter());
+        let got = nums_to_frequency(vec![0, 1, 1, 2, 2, 2]);
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn freq_minus_1() {
+        let mut freq: HashMap<i32, i32> = HashMap::from_iter([(1, 2)]);
+        freq_minus(&mut freq, 1);
+        assert_eq!(1, *freq.get(&1).unwrap());
+        freq_minus(&mut freq, 1);
+        assert_eq!(None, freq.get(&1));
+    }
 
     fn empty_vec() -> Vec<Vec<i32>> {
         vec![]
