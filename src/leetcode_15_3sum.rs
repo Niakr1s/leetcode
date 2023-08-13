@@ -4,53 +4,65 @@ struct Solution;
 
 impl Solution {
     pub fn three_sum(mut nums: Vec<i32>) -> Vec<Vec<i32>> {
-        find_sums_sorted(nums, 3, 0)
+        slow::find_sums_sorted(nums, 3, 0)
     }
 }
 
-fn find_sums_sorted(mut nums: Vec<i32>, dimension: usize, expected_sum: i32) -> Vec<Vec<i32>> {
-    nums.sort();
-    _find_sums_sorted(&nums, dimension, expected_sum).unwrap_or_default()
-}
+mod slow {
+    use std::collections::HashSet;
 
-fn _find_sums_sorted(nums: &[i32], dimension: usize, expected_sum: i32) -> Option<Vec<Vec<i32>>> {
-    match dimension {
-        0 => None,
-        _ if nums.len() < dimension => None,
+    pub fn find_sums_sorted(
+        mut nums: Vec<i32>,
+        dimension: usize,
+        expected_sum: i32,
+    ) -> Vec<Vec<i32>> {
+        nums.sort();
+        _find_sums_sorted(&nums, dimension, expected_sum).unwrap_or_default()
+    }
 
-        1 => nums
-            .binary_search(&expected_sum)
-            .ok()
-            .map(|_| vec![vec![expected_sum]]),
+    fn _find_sums_sorted(
+        nums: &[i32],
+        dimension: usize,
+        expected_sum: i32,
+    ) -> Option<Vec<Vec<i32>>> {
+        match dimension {
+            0 => None,
+            _ if nums.len() < dimension => None,
 
-        _ => {
-            let mut res: HashSet<Vec<i32>> = HashSet::new();
+            1 => nums
+                .binary_search(&expected_sum)
+                .ok()
+                .map(|_| vec![vec![expected_sum]]),
 
-            for i in 0..nums.len() {
-                let first = nums[i];
-                let remaining = &nums[i + 1..];
+            _ => {
+                let mut res: HashSet<Vec<i32>> = HashSet::new();
 
-                let found: Option<Vec<Vec<i32>>> =
-                    _find_sums_sorted(remaining, dimension - 1, expected_sum - first);
+                for i in 0..nums.len() {
+                    let first = nums[i];
+                    let remaining = &nums[i + 1..];
 
-                if let Some(found) = found {
-                    let mut found_with_first: Vec<Vec<i32>> = found
-                        .into_iter()
-                        .map(|mut sums| {
-                            sums.push(first);
-                            sums
-                        })
-                        .collect();
-                    for mut found in found_with_first {
-                        found.sort();
-                        res.insert(found);
+                    let found: Option<Vec<Vec<i32>>> =
+                        _find_sums_sorted(remaining, dimension - 1, expected_sum - first);
+
+                    if let Some(found) = found {
+                        let mut found_with_first: Vec<Vec<i32>> = found
+                            .into_iter()
+                            .map(|mut sums| {
+                                sums.push(first);
+                                sums
+                            })
+                            .collect();
+                        for mut found in found_with_first {
+                            found.sort();
+                            res.insert(found);
+                        }
                     }
                 }
-            }
 
-            match res.is_empty() {
-                false => Some(res.into_iter().collect()),
-                true => None,
+                match res.is_empty() {
+                    false => Some(res.into_iter().collect()),
+                    true => None,
+                }
             }
         }
     }
