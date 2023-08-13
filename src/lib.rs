@@ -1,8 +1,8 @@
 #![allow(dead_code, unused)]
 
-pub mod buy_sell_stock_121;
-pub mod longest_substring_3;
-pub mod search_in_rrotated_sort_arr_33;
-pub mod two_sum_1;
-pub mod valid_parentheses_20;
-pub mod palindrome_number;
+pub mod leetcode_121_buy_sell_stock;
+pub mod leetcode_1_two_sum;
+pub mod leetcode_20_valid_parentheses;
+pub mod leetcode_33_search_in_arr;
+pub mod leetcode_3_longest_substring;
+pub mod leetcode_9_palindrome_number;
