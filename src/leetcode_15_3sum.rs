@@ -6,66 +6,76 @@ impl Solution {
     }
 }
 
-use std::collections::{HashMap, HashSet};
-
 pub fn find_sums_sorted(mut nums: Vec<i32>, dimension: usize, expected_sum: i32) -> Vec<Vec<i32>> {
-    _find_sums_sorted(&sanitize_nums(nums, dimension), dimension, expected_sum).unwrap_or_default()
+    _find_sums_sorted(&sanitized_nums(nums, dimension), dimension, expected_sum)
 }
 
-fn _find_sums_sorted(nums: &[i32], dimension: usize, expected_sum: i32) -> Option<Vec<Vec<i32>>> {
+fn _find_sums_sorted(nums: &[i32], dimension: usize, expected_sum: i32) -> Vec<Vec<i32>> {
     match dimension {
-        0 => None,
-        _ if nums.len() < dimension => None,
+        0 => vec![],
+        _ if nums.len() < dimension => vec![],
 
-        1 => nums
-            .binary_search(&expected_sum)
-            .ok()
-            .map(|_| vec![vec![expected_sum]]),
+        1 => match nums.binary_search(&expected_sum) {
+            Ok(_) => vec![vec![expected_sum]],
+            Err(_) => vec![],
+        },
 
         _ => {
-            let mut res: HashSet<Vec<i32>> = HashSet::new();
+            let mut res = vec![];
 
-            for i in 0..nums.len() {
+            let mut i = 0;
+            while i <= (nums.len() - dimension) {
                 let first = nums[i];
                 let remaining = &nums[i + 1..];
 
-                let found: Option<Vec<Vec<i32>>> =
+                let found: Vec<Vec<i32>> =
                     _find_sums_sorted(remaining, dimension - 1, expected_sum - first);
 
-                if let Some(found) = found {
-                    let mut found_with_first: Vec<Vec<i32>> = found
-                        .into_iter()
-                        .map(|mut sums| {
-                            sums.push(first);
-                            sums
-                        })
-                        .collect();
-                    for mut found in found_with_first {
-                        found.sort();
-                        res.insert(found);
-                    }
-                }
+                found
+                    .into_iter()
+                    .map(|mut sums| {
+                        let mut v = vec![first];
+                        v.append(&mut sums);
+                        v
+                    })
+                    .for_each(|v| res.push(v));
+
+                i += nums[i..].partition_point(|n| n <= &first);
             }
 
-            match res.is_empty() {
-                false => Some(res.into_iter().collect()),
-                true => None,
-            }
+            res
         }
     }
 }
 
 /// Removes dublicates and returns sorted vector.
-fn sanitize_nums(nums: Vec<i32>, dimension: usize) -> Vec<i32> {
-    let mut freq = HashMap::new();
-    for num in nums {
-        freq.entry(num).and_modify(|count| *count += 1).or_insert(1);
+fn sanitized_nums(mut nums: Vec<i32>, dimension: usize) -> Vec<i32> {
+    nums.sort();
+    let mut res: Vec<i32> = vec![];
+
+    if nums.is_empty() {
+        return res;
     }
-    let mut res = freq.into_iter().fold(vec![], |mut acc, (num, count)| {
-        acc.append(&mut vec![num; count.min(dimension)]);
-        acc
-    });
-    res.sort();
+
+    let mut count = 0;
+    let mut last_num: Option<i32> = None;
+    for n in nums {
+        count += 1;
+
+        match last_num {
+            Some(last) if (last == n) => {
+                if count <= dimension {
+                    res.push(n);
+                }
+            }
+            _ => {
+                res.push(n);
+                last_num = Some(n);
+                count = 1;
+            }
+        }
+    }
+
     res
 }
 
@@ -73,7 +83,7 @@ fn sanitize_nums(nums: Vec<i32>, dimension: usize) -> Vec<i32> {
 mod tests {
     use std::collections::HashSet;
 
-    use crate::leetcode_15_3sum::sanitize_nums;
+    use crate::leetcode_15_3sum::sanitized_nums;
 
     use super::Solution;
 
@@ -81,8 +91,12 @@ mod tests {
         ($name:ident: $input:expr => $expected:expr) => {
             #[test]
             fn $name() {
+                let input = $input;
+                println!("input: {:?}", input);
+
+                let got = sorted(Solution::three_sum(input));
                 let expected: Vec<Vec<i32>> = sorted($expected);
-                let got = sorted(Solution::three_sum($input));
+
                 assert_eq!(got, expected);
             }
         };
@@ -100,7 +114,7 @@ mod tests {
 
     test!(custom_1: vec![-1, 0, 1, 2, -1, -4] => vec![vec![-1, -1, 2], vec![-1, 0, 1]]);
 
-    test!(custom_2: vec![-1, -1, 2, 2, 2] => vec![vec![-1, -1, 2]]);
+    test!(custom_2: vec![-1, 2, -1, 2, -1, 2, 2, 2] => vec![vec![-1, -1, 2]]);
 
     test!(custom_3: vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] => vec![vec![0, 0, 0]]);
 
@@ -122,28 +136,28 @@ mod tests {
 
     #[test]
     fn sanitize_nums_empty() {
-        assert_eq!(sanitize_nums(vec![], 3), vec![]);
+        assert_eq!(sanitized_nums(vec![], 3), vec![]);
     }
 
     #[test]
     fn sanitize_nums_one() {
-        assert_eq!(sanitize_nums(vec![1], 3), vec![1]);
+        assert_eq!(sanitized_nums(vec![1], 3), vec![1]);
     }
 
     #[test]
     fn sanitize_nums_three() {
-        assert_eq!(sanitize_nums(vec![0, 0, 0], 3), vec![0, 0, 0]);
+        assert_eq!(sanitized_nums(vec![0, 0, 0], 3), vec![0, 0, 0]);
     }
 
     #[test]
     fn sanitize_nums_long() {
-        assert_eq!(sanitize_nums(vec![0, 0, 0, 0, 0, 0, 0], 3), vec![0, 0, 0]);
+        assert_eq!(sanitized_nums(vec![0, 0, 0, 0, 0, 0, 0], 3), vec![0, 0, 0]);
     }
 
     #[test]
     fn sanitize_nums_custom_1() {
         assert_eq!(
-            sanitize_nums(vec![3, 3, 3, 3, 3, 2, 2, 1], 3),
+            sanitized_nums(vec![3, 3, 3, 3, 3, 2, 2, 1], 3),
             vec![1, 2, 2, 3, 3, 3]
         );
     }
